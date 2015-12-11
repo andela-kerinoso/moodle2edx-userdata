@@ -17,5 +17,8 @@
         "psr-4": {
             "Bdu\\": "src/"
         }
+    },
+    "require": {
+        "vlucas/phpdotenv": "^2.1"
     }
 }
