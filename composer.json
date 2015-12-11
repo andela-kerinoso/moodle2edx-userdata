@@ -1,0 +1,21 @@
+{
+    "name": "ibm-bdu/moodle2edx-userdata",
+    "description": "This package retrieves user data from Moodle MySQL database, processes it to be compatible with structure of MySQL database used by Open edX, and saves it on Open edX MySQL database.",
+    "type": "package",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "andela-kerinoso",
+            "email": "kolawole.erinoso@andela.com"
+        },
+        {
+            "name": "andela-ooduye",
+            "email": "oluwayemisi.oduye@andela.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Bdu\\": "src/"
+        }
+    }
+}
