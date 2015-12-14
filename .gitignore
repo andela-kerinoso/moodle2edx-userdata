@@ -2,4 +2,4 @@
 vendor/
 .idea/
 index.php
-moodle_data/*
+moodle_data/*.txt
