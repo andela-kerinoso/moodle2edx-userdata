@@ -1,9 +1,13 @@
 <?php
+require_once 'vendor/autoload.php';
 
-require 'vendor/autoload.php';
+	use Bdu\UserData\Moodle2Edx;
 
-use Bdu\UserData\Moodle2Edx;
+$userData = new Moodle2Edx;
 
-$db = new Moodle2Edx();
 
-$db->getUserData();
+	echo $userData->saveUserData();
+//echo $userData->getUserData();
+//	echo '<pre>';
+//print_r($userData->getUserData());
+//	echo '</pre>';
