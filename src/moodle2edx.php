@@ -2,33 +2,95 @@
 
 namespace Bdu\UserData;
 
-use PDO;
-use PDOException;
-
 class Moodle2Edx
 {
-    public $table = "mdl_user";
+	private $dbConn;
 
-    public function createConnection()
+    public function __construct()
     {
-        try {
-            return new PDO("mysql:port=8889;dbname=moodle30;host=127.0.0.1", "root", "root");
-        } catch (PDOException $e) {
-            return "Connection to database failed: " . $e->getMessage();
-        }
+        $this->dbConn = new DbConn();
     }
 
-    public function getUserData()
+	/**
+	 * Handle retrieval of users' data
+	 *
+	 * @param $sql SQL query statement
+	 * @return array|string All users' data
+	 */
+    protected function retrieveData($sql)
     {
-        $db = $this->createConnection();
-        $data = $db->query("SELECT u.id id, u.username username, u.password password, u.email email, u.firstaccess date_joined, u.lastlogin last_login FROM {$this->table} u")->fetchAll();
+	    try {
+		    $query = $this->dbConn->prepare($sql);
+		    $query->execute();
+	    } catch (\PDOException $e) {
+		    return $e->getMessage();
+	    } finally {
+		    $this->dbConn = null;
+	    }
 
-        foreach($data as &$d)
-        {
-            $d['date_joined'] = date("Y-m-d H:i:s", $d['date_joined']);
-            $d['last_login'] = date("Y-m-d H:i:s", $d['last_login']);
-        }
-        echo print_r(json_encode($data));
+	    $data = $query->fetchAll(DbConn::FETCH_ASSOC);
+
+	    if (isset($data[0]['date_joined'])) {
+		    foreach($data as &$d) {
+			    date_default_timezone_set('Africa/Lagos');
+			    $d['date_joined'] = date("Y-m-d H:i:s", $d['date_joined']);
+			    $d['last_login'] = date("Y-m-d H:i:s", $d['last_login']);
+		    }
+	    }
+
+        return $data;
     }
+
+	/**
+	 * @param $startID
+	 * @return int
+	 */
+	public function createAuthUser($startID) {
+		$file = fopen('moodle_data/auth_user.txt', 'w');
+
+		if (! is_null($file)) {
+			$sql = "SELECT u.username username, u.password password, u.email email, u.firstaccess date_joined, u.lastlogin last_login FROM mdl_user u";
+			$userData = $this->retrieveData($sql);
+			$counter = $startID;
+
+			foreach ($userData as $d) {
+				$record = $counter . ">" . $d['username'] . ">>>" . $d['email'] . ">" . $d['password'] . ">0>1>0>" . $d['last_login'] . ">" . $d['date_joined'] . ">\n";
+				fwrite($file, $record);
+				$counter++;
+			}
+
+			fclose($file);
+
+			return 1;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param $startID
+	 * @return int
+	 */
+	public function createAuthUserProfile($startID) {
+		$file = fopen('moodle_data/auth_userprofile.txt', 'w');
+
+		if (! is_null($file)) {
+			$sql = "SELECT u.firstname firstname, u.lastname lastname, u.city city, u.country country, u.lang language, u.description bio FROM mdl_user u;";
+			$userData = $this->retrieveData($sql);
+			$idIncrement = $startID;
+
+			foreach ($userData as $d) {
+				$record = $idIncrement . ">" . $idIncrement . ">" . $d['firstname'] . " " . $d['lastname'] . ">" . $d['language'] . ">>>>>>>>>1>" . $d['country'] . ">" . $d['city'] . ">" . $d['bio'] . ">" . "NULL" . ">\n";
+				fwrite($file, $record);
+				$idIncrement++;
+			}
+
+			fclose($file);
+
+			return 1;
+		}
+
+		return 0;
+	}
 
 }
