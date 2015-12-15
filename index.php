@@ -5,9 +5,4 @@ require_once 'vendor/autoload.php';
 
 $userData = new Moodle2Edx;
 
-//	echo $userData->createAuthUser(8);
-	echo $userData->createAuthUserProfile(8);
-//echo $userData->getUserData();
-//	echo '<pre>';
-//print_r($userData->getUserData());
-//	echo '</pre>';
+echo $userData->convertAll(1);
