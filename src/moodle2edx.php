@@ -70,12 +70,7 @@ class Moodle2Edx
 		$file = fopen('moodle_data/student_courseenrollment.txt', 'w');
 
 		if (! is_null($file)) {
-			$sql = "SELECT u.id user_id, c.id course_id, c.timecreated created, c.visible is_active FROM mdl_user u
-					INNER JOIN mdl_role_assignments ra ON ra.userid=u.id
-					INNER JOIN mdl_context ct ON ct.id = ra.contextid
-					INNER JOIN mdl_course c ON c.id = ct.instanceid
-					INNER JOIN mdl_role r ON r.id = ra.roleid
-					WHERE r.id = 5";
+			$sql = "SELECT u.id user_id, c.id course_id, c.timecreated created, c.visible is_active FROM mdl_user u INNER JOIN mdl_role_assignments ra ON ra.userid=u.id INNER JOIN mdl_context ct ON ct.id = ra.contextid INNER JOIN mdl_course c ON c.id = ct.instanceid INNER JOIN mdl_role r ON r.id = ra.roleid WHERE r.id = 5";
 			$userData = $this->retrieveData($sql);
 			$idIncrement = $startID;
 
@@ -93,6 +88,37 @@ class Moodle2Edx
 		return 0;
 	}
 
+    /**
+     * Handle saving data of table courseware_studentmodule
+     *
+     * @param $startID
+     * @return int
+     */
+    public function createStudentGrades($startID)
+    {
+        $file = fopen('moodle_data/courseware_studentmodule', 'w');
+
+        if (! is_null($file) ) {
+            $sql = "SELECT u.id student_id, c.id course_id, gi.itemname assessment, gi.itemtype module_type, gi.grademin grade_min, gi.grademax max_grade, gg.finalgrade grade FROM mdl_user u INNER JOIN mdl_grade_grades gg ON gg.userid = u.id INNER JOIN mdl_grade_items gi ON gi.id = gg.itemid INNER JOIN mdl_course c ON c.id = gi.courseid WHERE gi.itemtype not in ('course') AND gi.itemname not in ('')";
+            $userData = $this->retrieveData($sql);
+            $idIncrement = $startID;
+
+            foreach ($userData as $d) {
+                $record = $idIncrement . ">" . $d['module_type'] . ">>" . $d['student_id'] . ">NULL>" . $d['grade'] . ">>>" . $d['max_grade'] . ">na>" . $d['course_id'];
+                fwrite($file, $record);
+                $idIncrement++;
+            }
+
+            fclose($file);
+
+            return 1;
+
+        }
+
+        return 0;
+
+    }
+
 	/**
 	 * Handle calling of all methods synchronously
 	 *
@@ -109,6 +135,10 @@ class Moodle2Edx
 		if ($proceedStatus) {
 			$proceedStatus += $this->createStudentCourseEnrollment($startID);
 		}
+
+        if ($proceedStatus) {
+            $proceedStatus += $this->createStudentGrades($startID);
+        }
 
 		return $proceedStatus;
 	}
