@@ -35,7 +35,7 @@ class DbConn extends PDO
      */
     protected function loadDotenv()
     {
-		$dotenv = new \Dotenv\Dotenv($_SERVER['DOCUMENT_ROOT']);
+		$dotenv = new \Dotenv\Dotenv(__DIR__ . '/..');
 		$dotenv->load();
     }
 }
