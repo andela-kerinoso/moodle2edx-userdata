@@ -33,7 +33,7 @@ class DbConn extends PDO
     /**
      * Load Dotenv to grant getenv() access to environment variables in .env file
      */
-    protected function loadDotenv()
+    public static function loadDotenv()
     {
 		$dotenv = new \Dotenv\Dotenv(__DIR__ . '/..');
 		$dotenv->load();

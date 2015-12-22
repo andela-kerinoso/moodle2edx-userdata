@@ -107,12 +107,18 @@ class moodle2edx
         $file = fopen('moodle_data/courseware_studentmodule', 'w');
 
         if (! is_null($file) ) {
-            $sql = "SELECT u.id student_id, c.id course_id, gi.itemname assessment, gi.itemtype module_type, gi.grademin grade_min, gi.grademax max_grade, gg.finalgrade grade FROM mdl_user u INNER JOIN mdl_grade_grades gg ON gg.userid = u.id INNER JOIN mdl_grade_items gi ON gi.id = gg.itemid INNER JOIN mdl_course c ON c.id = gi.courseid WHERE gi.itemtype not in ('course') AND gi.itemname not in ('')";
+            $sql = "SELECT u.id student_id, c.id course_id, gi.itemname assessment,
+					gi.itemtype module_type, gi.grademin grade_min, gi.grademax max_grade,
+					gg.finalgrade grade, gg.timemodified modified_date FROM mdl_user u
+					INNER JOIN mdl_grade_grades gg ON gg.userid = u.id
+					INNER JOIN mdl_grade_items gi ON gi.id = gg.itemid
+					INNER JOIN mdl_course c ON c.id = gi.courseid
+					WHERE gi.itemtype = 'mod' AND gi.itemname not in ('')";
             $userData = $this->retrieveData($sql);
             $idIncrement = $startID;
 
             foreach ($userData as $d) {
-                $record = $idIncrement . ">" . $d['module_type'] . ">>" . $d['student_id'] . ">NULL>" . $d['grade'] . ">>>" . $d['max_grade'] . ">na>" . $d['course_id'];
+                $record = $idIncrement . ">problem>>" . $d['student_id'] . ">NULL>" . $d['grade'] . ">" . $d['modified_date'] . ">" . $d['modified_date'] . ">" . $d['max_grade'] . ">na>" . $d['course_id'] . ">\n";
                 fwrite($file, $record);
                 $idIncrement++;
             }
@@ -136,17 +142,17 @@ class moodle2edx
 	    $file = fopen('moodle_data/certificates_generatedcertificate.txt', 'w');
 
 	    if (! is_null($file)) {
-		    $sql = "SELECT u.id user_id, gg.finalgrade grade, c.id course_id, u.username name
-					FROM mdl_user u
+		    $sql = "SELECT u.id user_id, gi.gradepass gradepass, gg.timemodified modified_date,
+					gg.finalgrade grade, c.id course_id, u.username name FROM mdl_user u
 					INNER JOIN mdl_grade_grades gg ON gg.userid = u.id
 					INNER JOIN mdl_grade_items gi ON gi.id = gg.itemid
 					INNER JOIN mdl_course c ON c.id = gi.courseid
-					WHERE gi.itemtype = 'course' AND gi.itemname not in ('')";
+					WHERE gi.itemtype = 'course'";
 		    $userData = $this->retrieveData($sql);
 		    $idIncrement = $startID;
 
 		    foreach ($userData as $d) {
-			    $record = $idIncrement . ">" . $d['user_id'] . ">>" . $d['grade'] . ">" . $d['course_id'] . ">>>generating>>>" . $d['name'] . ">NULL>NULL>>honor>\n";
+			    $record = $idIncrement . ">" . $d['user_id'] . ">>" . substr($d['grade']/100, 0, 5) . ">" . $d['course_id'] . ">>0>" . (($d['grade'] >= $d['gradepass']) ? "generating" : "notpassing") . ">>>" . $d['name'] . ">" . $d['modified_date'] . ">" . $d['modified_date'] . ">>honor>\n";
 			    fwrite($file, $record);
 			    $idIncrement++;
 		    }
@@ -178,6 +184,10 @@ class moodle2edx
         }
 
 	    if ($proceedStatus == 2) {
+		    $proceedStatus += $this->createCoursewareStudentModule($startID);
+	    }
+
+	    if ($proceedStatus == 3) {
 		    $proceedStatus += $this->createCertificatesGeneratedCertificate($startID);
 	    }
 
@@ -207,7 +217,7 @@ class moodle2edx
 
         if (isset($data[0]['date_joined'])) {
             foreach ($data as &$d) {
-                date_default_timezone_set('Africa/Lagos');
+				$this->setTimeZone();
                 $d['date_joined'] = date("Y-m-d H:i:s", $d['date_joined']);
                 $d['last_login'] = date("Y-m-d H:i:s", $d['last_login']);
             }
@@ -218,6 +228,13 @@ class moodle2edx
                 $d['course_id'] = $this->formatCourseId($d['course_id']);
             }
         }
+
+	    if (isset($data[0]['modified_date'])) {
+		    foreach ($data as &$d) {
+			    $this->setTimeZone();
+			    $d['modified_date'] = date("Y-m-d H:i:s", $d['modified_date']);
+		    }
+	    }
 
         return $data;
     }
@@ -254,4 +271,9 @@ class moodle2edx
 
         return $edxFormat;
     }
+
+	private function setTimeZone() {
+		DbConn::loadDotenv();
+		date_default_timezone_set(getenv('TIME_ZONE'));
+	}
 }
