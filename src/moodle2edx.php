@@ -2,7 +2,7 @@
 
 namespace Bdu\UserData;
 
-class moodle2edx
+class Moodle2Edx
 {
     const COURSE_ID_1 = "course-v1:Andela+AND101+2015_1";
     const COURSE_ID_2 = "course-v1:Andela+AND102+2015_2";
