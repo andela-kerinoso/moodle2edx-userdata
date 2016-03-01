@@ -20,7 +20,7 @@ class Moodle2Edx
         $file = fopen('moodle_data/auth_user.txt', 'w');
 
         if (! is_null($file)) {
-            $sql = "SELECT u.id id, u.username username, u.password password, u.email email, u.firstaccess date_joined, u.lastlogin last_login FROM mdl_user u";
+            $sql = "SELECT u.id id, u.username username, u.password password, u.email email, u.firstaccess date_joined, u.lastlogin last_login FROM mdl_user u WHERE auth='email' OR auth='manual' OR auth='webservice'";
             $userData = $this->retrieveData($sql);
 
             foreach ($userData as $d) {
@@ -179,17 +179,17 @@ class Moodle2Edx
             $proceedStatus = $this->createAuthUserProfile();
         }
 
-        if ($proceedStatus) {
-            $proceedStatus += $this->createStudentCourseEnrollment($startID);
-        }
-
-	    if ($proceedStatus == 2) {
-		    $proceedStatus += $this->createCoursewareStudentModule($startID);
-	    }
-
-	    if ($proceedStatus == 3) {
-		    $proceedStatus += $this->createCertificatesGeneratedCertificate($startID);
-	    }
+      //   if ($proceedStatus) {
+      //       $proceedStatus += $this->createStudentCourseEnrollment($startID);
+      //   }
+      //
+	    // if ($proceedStatus == 2) {
+		  //   $proceedStatus += $this->createCoursewareStudentModule($startID);
+	    // }
+      //
+	    // if ($proceedStatus == 3) {
+		  //   $proceedStatus += $this->createCertificatesGeneratedCertificate($startID);
+	    // }
 
         return $proceedStatus;
     }
