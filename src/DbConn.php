@@ -24,8 +24,9 @@ class DbConn extends PDO
 				parent::__construct($engine . ':host=' . $host . ';port=' . $port . ';dbname=' . $dbname . ';charset=utf8mb4', $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 								PDO::ATTR_PERSISTENT => false]);
 			} elseif ($engine == 'db2') {
-				parent::__construct("ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=" . $dbname . ";HOSTNAME=" . $host . ";PORT=" . $port . ";PROTOCOL=TCPIP;", $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-								PDO::ATTR_PERSISTENT => false]);
+        parent::__construct("odbc:DB2Server", $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_PERSISTENT => false]);
+				// parent::__construct("ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=" . $dbname . ";HOSTNAME=" . $host . ";PORT=" . $port . ";PROTOCOL=TCPIP;", $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+				// 				PDO::ATTR_PERSISTENT => false]);
 			}
     } catch (\PDOException $e) {
             return 'Error in connection';
